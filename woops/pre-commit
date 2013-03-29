@@ -3,6 +3,10 @@ from os.path import splitext
 import json
 import sys
 import re
+import subprocess
+
+# Stash any changes to the working tree that are not going to be committed
+subprocess.call(['git', 'stash', 'save', '--keep-index', '-q'], stdout=subprocess.PIPE)
 
 ALL = '*'
 
@@ -86,5 +90,10 @@ for f in files:
 # Finally, write to stdout the JSON encoded output
 sys.stdout.write(json.dumps(out, indent=4))
 
+# Unstash changes to the working tree that we had stashed
+subprocess.call(['git', 'reset', '--hard'], 
+        stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+subprocess.call(['git', 'stash', 'pop', '--quiet', '--index'], 
+        stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 # Tell Git that the plugin ran successfully (according to design)
 sys.exit(0)
